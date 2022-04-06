@@ -17,6 +17,8 @@ client.once("ready", async (evt) => {
     let currentRigs = 0;
     let prevGPUs = 0;
     let prevRigs = 0;
+    let isOffline = false;
+    let isOfflineAgain = false;
 
     setInterval(async() => {
         var url = "https://api2.hiveos.farm/api/v2/farms/1565141/stats";
@@ -38,19 +40,28 @@ client.once("ready", async (evt) => {
             currentRigs = hiveInfo.rigs_online;
             console.log("current:", currentRigs, "prev:", prevRigs);
             console.log("current:", currentGPUs, "prev:", prevGPUs);
-            if (currentGPUs < prevGPUs) {
-                let sam = await client.users.fetch(SAM);
-                sam.send("GPU went offline! " + String(currentGPUs) + " gpus online " + String(currentRigs) + " rigs online");
-
-                let leran = await client.users.fetch(LERAN);
-                leran.send("GPU went offline! " + String(currentGPUs) + " gpus online " + String(currentRigs) + " rigs online");
+            if ( currentGPUs < prevGPUs ) {
+                isOffline = true;
             }
-            if (currentRigs < prevRigs) {
-                let sam = await client.users.fetch(SAM);
-                sam.send("Rig went offline! " + String(currentGPUs) + " gpus online " + String(currentRigs) + " rigs online");
 
-                let leran = await client.users.fetch(LERAN);
-                leran.send("Rig went offline! " + String(currentGPUs) + " gpus online " + String(currentRigs) + " rigs online");
+            console.log("OFFLINE",isOffline)
+            if ( isOffline ) {
+                if ( currentGPUs <= prevGPUs ) {
+                    isOfflineAgain = true
+                }
+                isOffline = false;
+            }
+
+            console.log("OFFLINE AGAIN", isOfflineAgain)
+            if ( isOfflineAgain ) {
+                if ( currentGPUs <= prevGPUs ) {
+                    let sam = await client.users.fetch(SAM);
+                    sam.send("GPU went offline! " + String(currentGPUs) + " gpus online " + String(currentRigs) + " rigs online");
+
+                    let leran = await client.users.fetch(LERAN);
+                    leran.send("GPU went offline! " + String(currentGPUs) + " gpus online " + String(currentRigs) + " rigs online");
+                }
+                isOfflineAgain = false;
             }
             prevGPUs = hiveInfo.gpus_online;
             prevRigs = hiveInfo.rigs_online;
